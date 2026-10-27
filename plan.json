@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-27T09:53:41.612Z",
+  "publishedAt": "2026-10-27T11:42:40.474Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -25,38 +25,6 @@
       "materialQty": "",
       "qty": null,
       "color": "#ec4899",
-      "note": "",
-      "done": false
-    },
-    {
-      "id": "tm5se02m4mvqiaic8",
-      "machine": "Klett",
-      "date": "2026-10-27",
-      "start": 6.5,
-      "end": 12,
-      "endNextDay": false,
-      "label": "",
-      "orderNumber": "",
-      "materialType": "",
-      "materialQty": "",
-      "qty": null,
-      "color": "#6366f1",
-      "note": "",
-      "done": false
-    },
-    {
-      "id": "t6a0t51w0mvqiakc6",
-      "machine": "Lih Sheng 1",
-      "date": "2026-10-27",
-      "start": 10,
-      "end": 14.75,
-      "endNextDay": false,
-      "label": "",
-      "orderNumber": "",
-      "materialType": "",
-      "materialQty": "",
-      "qty": null,
-      "color": "#059669",
       "note": "",
       "done": false
     },
@@ -249,6 +217,22 @@
       "materialQty": "",
       "qty": null,
       "color": "#3b82f6",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "tlqt7eto8mvql5ygh",
+      "machine": "Curioni",
+      "date": "2026-10-27",
+      "start": 13.75,
+      "end": 23.5,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#ce3bf7",
       "note": "",
       "done": false
     }
