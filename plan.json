@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-27T09:40:02.968Z",
+  "publishedAt": "2026-10-27T09:44:46.784Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -26,14 +26,14 @@
       "qty": 53,
       "color": "#f59e0b",
       "note": "gdsg\nsfgs\ngs\ndfg\nsd\ng",
-      "done": false
+      "done": true
     },
     {
       "id": "tacu63vlomvqhpe9m",
       "machine": "Curioni",
       "date": "2026-10-27",
-      "start": 10,
-      "end": 14.75,
+      "start": 5.5,
+      "end": 10.25,
       "endNextDay": false,
       "label": "teta",
       "orderNumber": "",
@@ -48,8 +48,8 @@
       "id": "ttcqmnxxqmvqhpjye",
       "machine": "Lih Sheng 1",
       "date": "2026-10-27",
-      "start": 17.5,
-      "end": 24,
+      "start": 16.5,
+      "end": 23,
       "endNextDay": false,
       "label": "beta",
       "orderNumber": "",
@@ -58,7 +58,7 @@
       "qty": null,
       "color": "#10b981",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "t2au6a88dmvqhpr2k",
@@ -74,7 +74,7 @@
       "qty": null,
       "color": "#0f172a",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "t96y87cldmvqhpxlc",
@@ -90,46 +90,14 @@
       "qty": null,
       "color": "#0ea5e9",
       "note": "",
-      "done": false
-    },
-    {
-      "id": "t6nmjgicrmvqhs4e4",
-      "machine": "Sklejarka 2",
-      "date": "2026-10-27",
-      "start": 10.25,
-      "end": 22.25,
-      "endNextDay": false,
-      "label": "",
-      "orderNumber": "",
-      "materialType": "",
-      "materialQty": "",
-      "qty": null,
-      "color": "#f4f73b",
-      "note": "",
-      "done": false
-    },
-    {
-      "id": "t2wokc7jxmvqhs8z0",
-      "machine": "Sklejarka IIcz.",
-      "date": "2026-10-27",
-      "start": 3.25,
-      "end": 21,
-      "endNextDay": false,
-      "label": "",
-      "orderNumber": "",
-      "materialType": "",
-      "materialQty": "",
-      "qty": null,
-      "color": "#ec4899",
-      "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "tyzulwookmvqhv97a",
       "machine": "Lih Sheng 1",
       "date": "2026-10-27",
-      "start": 10.75,
-      "end": 15.5,
+      "start": 11.75,
+      "end": 16.5,
       "endNextDay": false,
       "label": "teta",
       "orderNumber": "",
@@ -138,14 +106,14 @@
       "qty": null,
       "color": "#ec4899",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "t7wtlrkwtmvqhvame",
       "machine": "Lih Sheng 1",
       "date": "2026-10-27",
-      "start": 1.25,
-      "end": 8.5,
+      "start": 4.5,
+      "end": 11.75,
       "endNextDay": false,
       "label": "tet",
       "orderNumber": "555",
@@ -154,7 +122,7 @@
       "qty": 53,
       "color": "#f59e0b",
       "note": "gdsg\nsfgs\ngs\ndfg\nsd\ng",
-      "done": false
+      "done": true
     },
     {
       "id": "t02b2u2khmvqhvbx6",
@@ -170,7 +138,7 @@
       "qty": null,
       "color": "#f4f73b",
       "note": "",
-      "done": false
+      "done": true
     }
   ]
 }
