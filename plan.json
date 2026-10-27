@@ -1,0 +1,20 @@
+{
+  "startDate": "2026-10-27",
+  "dayStartHour": 0,
+  "dayEndHour": 24,
+  "pxPerHour": 24,
+  "machines": ["Klett", "Curioni", "Lih Sheng 1", "Lih Sheng 2", "Sklejarka 1", "Sklejarka 2", "Sklejarka IIcz.", "Kaszerownica", "E-commerce"],
+  "tasks": [
+    { "id": "p1", "machine": "Klett", "date": "2026-10-27", "start": 6, "end": 14, "endNextDay": false, "label": "Pudła 300x200", "orderNumber": "ZL-1041", "materialType": "Tektura 3W", "materialQty": "4200 ark.", "qty": 3800, "color": "#3b82f6", "note": "", "done": true },
+    { "id": "p2", "machine": "Klett", "date": "2026-10-27", "start": 14.5, "end": 22, "endNextDay": false, "label": "Karton klapowy", "orderNumber": "ZL-1042", "materialType": "Tektura 5W", "materialQty": "3000 ark.", "qty": 2600, "color": "#6366f1", "note": "", "done": false },
+    { "id": "p3", "machine": "Klett", "date": "2026-10-28", "start": 6, "end": 18, "endNextDay": false, "label": "Display ekspozycyjny", "orderNumber": "ZL-1047", "materialType": "Tektura 3W", "materialQty": "5000 ark.", "qty": 4500, "color": "#0ea5e9", "note": "", "done": false },
+    { "id": "p4", "machine": "Curioni", "date": "2026-10-27", "start": 8, "end": 12, "endNextDay": false, "label": "Wykrojnik B5", "orderNumber": "ZL-1038", "materialType": "Tektura 3W", "materialQty": "1500 ark.", "qty": 1400, "color": "#10b981", "note": "", "done": true },
+    { "id": "p5", "machine": "Curioni", "date": "2026-10-27", "start": 12.5, "end": 20, "endNextDay": false, "label": "Zestaw wysyłkowy", "orderNumber": "ZL-1043", "materialType": "Tektura 5W", "materialQty": "2800 ark.", "qty": 2500, "color": "#14b8a6", "note": "", "done": false },
+    { "id": "p6", "machine": "Lih Sheng 1", "date": "2026-10-27", "start": 22, "end": 6, "endNextDay": true, "label": "Nocna zmiana — pudła", "orderNumber": "ZL-1045", "materialType": "Tektura 3W", "materialQty": "6000 ark.", "qty": 5500, "color": "#f59e0b", "note": "", "done": false },
+    { "id": "p7", "machine": "Lih Sheng 2", "date": "2026-10-28", "start": 6, "end": 14, "endNextDay": false, "label": "Tacka na owoce", "orderNumber": "ZL-1049", "materialType": "Tektura 3W", "materialQty": "3200 ark.", "qty": 3000, "color": "#8b5cf6", "note": "", "done": false },
+    { "id": "p8", "machine": "Sklejarka 1", "date": "2026-10-27", "start": 7, "end": 15, "endNextDay": false, "label": "Karton zbiorczy", "orderNumber": "ZL-1040", "materialType": "Tektura 5W", "materialQty": "4000 ark.", "qty": 3700, "color": "#2563eb", "note": "", "done": false },
+    { "id": "p9", "machine": "Sklejarka 2", "date": "2026-10-29", "start": 8, "end": 16, "endNextDay": false, "label": "Pudło prezentowe", "orderNumber": "ZL-1051", "materialType": "Tektura 3W", "materialQty": "2000 ark.", "qty": 1800, "color": "#ec4899", "note": "", "done": false },
+    { "id": "p10", "machine": "Kaszerownica", "date": "2026-10-27", "start": 9, "end": 13, "endNextDay": false, "label": "Kaszerowanie okładek", "orderNumber": "ZL-1046", "materialType": "Papier kredowy", "materialQty": "1200 ark.", "qty": 1100, "color": "#84cc16", "note": "", "done": false },
+    { "id": "p11", "machine": "E-commerce", "date": "2026-10-28", "start": 12, "end": 18, "endNextDay": false, "label": "Zamówienia sklep online", "orderNumber": "ZL-1050", "materialType": "Tektura 3W", "materialQty": "800 ark.", "qty": 750, "color": "#10b981", "note": "", "done": false }
+  ]
+}

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan produkcji — podgląd TV</title>
+<style>
+:root {
+  --bg: #0f1722;
+  --panel: #162231;
+  --cell: #1a2738;
+  --weekend: #141e2c;
+  --today: #1a2f2c;
+  --line: #2a3a4d;
+  --text: #e6edf5;
+  --muted: #8fa1b6;
+  --label-width: 13vw;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Arial, sans-serif;
+  cursor: none;
+  user-select: none;
+}
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+#top {
+  flex: none;
+  height: 6vh;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.2vw;
+  background: #0b121b;
+  border-bottom: 1px solid var(--line);
+}
+#top .title { font-weight: 700; font-size: clamp(16px, 2.6vh, 34px); }
+#range { font-size: clamp(14px, 2.4vh, 32px); font-weight: 600; }
+#status { display: flex; align-items: center; gap: 0.5em; font-size: clamp(12px, 1.9vh, 26px); color: var(--muted); }
+#status .dot { width: 0.7em; height: 0.7em; border-radius: 50%; background: #34d399; }
+#status.warn .dot { background: #f59e0b; }
+#status.bad .dot { background: #ef4444; }
+#status.bad { color: #fca5a5; }
+
+#grid { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.headerRow, .machineRow { display: flex; }
+.headerRow { flex: none; height: 8vh; min-height: 48px; }
+.machineRow { flex: 1; min-height: 0; border-bottom: 1px solid var(--line); }
+
+.cornerCell, .labelCell {
+  width: var(--label-width);
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 0.8vw;
+  background: var(--panel);
+  border-right: 2px solid var(--line);
+  font-weight: 700;
+  font-size: clamp(13px, 2.3vh, 32px);
+}
+.cornerCell { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+
+.dayHeader {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6vh 0.6vw 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.dayHeader.today { background: #1d3b36; }
+.dayHeader .dow { font-weight: 700; font-size: clamp(14px, 2.4vh, 32px); }
+.dayHeader .hours { position: relative; height: 2.6vh; margin-top: 0.8vh; }
+.hourTick {
+  position: absolute;
+  top: 0;
+  font-size: clamp(11px, 1.7vh, 22px);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hourTick::before {
+  content: "";
+  position: absolute;
+  top: -0.6vh;
+  left: 0;
+  width: 1px;
+  height: 0.6vh;
+  background: #4a5d73;
+}
+.hourTick.align-start { transform: translateX(0); }
+.hourTick.align-center { transform: translateX(-50%); }
+.hourTick.align-center::before { left: 50%; }
+.hourTick.align-end { transform: translateX(-100%); }
+.hourTick.align-end::before { left: 100%; }
+
+.dayCell {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  border-right: 1px solid var(--line);
+  background-color: var(--cell);
+  background-image: linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: calc(100% / 24) 100%;
+}
+.dayCell.weekend { background-color: var(--weekend); }
+.dayCell.today { background-color: var(--today); }
+
+.nowLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.task {
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  min-width: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2vh;
+  padding: 0.4vh 0.5vw;
+  overflow: hidden;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 0.5vh;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  font-size: clamp(11px, 1.7vh, 24px);
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+  z-index: 2;
+}
+.task .l1, .task .l2, .task .l3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task .l1 { font-weight: 700; font-size: 1.1em; }
+.task .l3 { opacity: 0.9; }
+.task.fragFirst { border-right: 3px dashed rgba(255,255,255,0.85); }
+.task.fragSecond { border-left: 3px dashed rgba(255,255,255,0.85); }
+.task.overlap { outline: 2px solid #ef4444; }
+.task.done { opacity: 0.6; }
+.task.done .l1, .task.done .l2, .task.done .l3 {
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: rgba(0,0,0,0.85);
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <div class="title">Plan produkcji</div>
+    <div id="range"></div>
+    <div id="status"><span class="dot"></span><span id="statusText">Wczytywanie…</span></div>
+  </div>
+  <div id="grid"></div>
+</div>
+
+<script>
+"use strict";
+
+// Read-only wallboard for a TV: loads plan.json from the same folder every
+// minute, shows today + the next few days (change with ?dni=N, 1-7), and keeps
+// the last good data on screen if the network drops.
+const params = new URLSearchParams(location.search);
+function intParam(name, min, max, def) {
+  const n = parseInt(params.get(name), 10);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
+}
+const DAYS = intParam("dni", 1, 7, 3);
+const DATA_FILE = "plan.json";
+const LOAD_MS = 60 * 1000;
+const RENDER_MS = 30 * 1000;
+const STALE_MS = 15 * 60 * 1000;
+const CACHE_KEY = "planProdukcjiTV_cache_v1";
+const DEFAULT_MACHINES = [
+  "Klett", "Curioni", "Lih Sheng 1", "Lih Sheng 2",
+  "Sklejarka 1", "Sklejarka 2", "Sklejarka IIcz.", "Kaszerownica", "E-commerce"
+];
+
+let state = { machines: DEFAULT_MACHINES.slice(), tasks: [] };
+let lastOk = null;
+let lastError = null;
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+function isoFromDate(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+function addDaysISO(iso, n) {
+  const d = new Date(iso + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return isoFromDate(d);
+}
+function isWeekendISO(iso) {
+  const dow = new Date(iso + "T00:00:00").getDay();
+  return dow === 0 || dow === 6;
+}
+const DOW_NAMES = ["nie", "pon", "wt", "śr", "czw", "pt", "sob"];
+function formatDayHeader(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return `${DOW_NAMES[d.getDay()]} ${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
+}
+function decToTime(dec) {
+  const h = Math.floor(dec);
+  const m = Math.round((dec - h) * 60);
+  return `${pad2(h)}:${pad2(m)}`;
+}
+function wrapHour(dec) { return ((dec % 24) + 24) % 24; }
+
+// ISO 8601 week number: weeks start Monday, week 1 contains the year's first Thursday.
+function isoWeekNumber(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3);
+  return 1 + Math.round((date - firstThursday) / (7 * 24 * 3600 * 1000));
+}
+
+function formatTaskTimeRange(task) {
+  const startLabel = decToTime(wrapHour(task.start));
+  let endLabel;
+  if (task.end > 24 || task.endNextDay) endLabel = decToTime(wrapHour(task.end)) + " (+1d)";
+  else if (task.end === 24) endLabel = "00:00";
+  else endLabel = decToTime(task.end);
+  return { startLabel, endLabel };
+}
+
+const HOUR_TICK_STEPS = [1, 2, 3, 4, 6, 8, 12, 24];
+const MIN_TICK_SPACING_PX = 75;
+function buildHourRuler(container, pxPerHour) {
+  let step = 24;
+  for (const s of HOUR_TICK_STEPS) {
+    if (s * pxPerHour >= MIN_TICK_SPACING_PX) { step = s; break; }
+  }
+  for (let h = 0; h <= 24; h += step) {
+    const tick = document.createElement("span");
+    const align = h === 0 ? "start" : h === 24 ? "end" : "center";
+    tick.className = "hourTick align-" + align;
+    tick.style.left = (h / 24 * 100) + "%";
+    tick.textContent = h === 24 ? "23:59" : pad2(h) + ":00";
+    container.appendChild(tick);
+  }
+}
+
+function applyData(data) {
+  state.machines = Array.isArray(data.machines) && data.machines.length ? data.machines : DEFAULT_MACHINES.slice();
+  state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+}
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return;
+    const cached = JSON.parse(raw);
+    applyData(cached.data);
+    lastOk = new Date(cached.savedAt);
+  } catch (e) { /* no usable cache */ }
+}
+async function load() {
+  try {
+    const res = await fetch(DATA_FILE + "?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    applyData(data);
+    lastOk = new Date();
+    lastError = null;
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: lastOk.getTime(), data })); } catch (e) { /* storage blocked */ }
+  } catch (e) {
+    lastError = e.message || String(e);
+  }
+  render();
+}
+
+function renderStatus() {
+  const box = document.getElementById("status");
+  const text = document.getElementById("statusText");
+  const time = lastOk ? pad2(lastOk.getHours()) + ":" + pad2(lastOk.getMinutes()) : "—";
+  const stale = lastOk && (Date.now() - lastOk.getTime() > STALE_MS);
+  let cls = "";
+  if (!lastOk && lastError) { text.textContent = "Brak danych — " + lastError; cls = "bad"; }
+  else if (lastError) { text.textContent = "Brak połączenia — dane z " + time; cls = stale ? "bad" : "warn"; }
+  else if (!lastOk) { text.textContent = "Wczytywanie…"; }
+  else { text.textContent = "Zaktualizowano " + time; if (stale) cls = "bad"; }
+  box.className = cls;
+}
+
+function render() {
+  const now = new Date();
+  const todayIso = isoFromDate(now);
+  const days = [];
+  for (let i = 0; i < DAYS; i++) days.push(addDaysISO(todayIso, i));
+
+  const first = new Date(days[0] + "T00:00:00"), last = new Date(days[days.length - 1] + "T00:00:00");
+  document.getElementById("range").textContent =
+    `Tydzień ${isoWeekNumber(now)} · ${pad2(first.getDate())}.${pad2(first.getMonth() + 1)} – ${pad2(last.getDate())}.${pad2(last.getMonth() + 1)}.${last.getFullYear()}`;
+  renderStatus();
+
+  const dayPx = (window.innerWidth * 0.87) / DAYS;
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "headerRow";
+  const corner = document.createElement("div");
+  corner.className = "cornerCell";
+  corner.textContent = "Maszyna";
+  headerRow.appendChild(corner);
+  for (const day of days) {
+    const h = document.createElement("div");
+    h.className = "dayHeader" + (day === todayIso ? " today" : "");
+    const dow = document.createElement("div");
+    dow.className = "dow";
+    dow.textContent = formatDayHeader(day);
+    const hours = document.createElement("div");
+    hours.className = "hours";
+    buildHourRuler(hours, dayPx / 24);
+    h.appendChild(dow);
+    h.appendChild(hours);
+    headerRow.appendChild(h);
+  }
+  grid.appendChild(headerRow);
+
+  const cellsByKey = {};
+  const nowHour = now.getHours() + now.getMinutes() / 60;
+  for (const machine of state.machines) {
+    const row = document.createElement("div");
+    row.className = "machineRow";
+    const label = document.createElement("div");
+    label.className = "labelCell";
+    label.textContent = machine;
+    row.appendChild(label);
+    for (const day of days) {
+      const cell = document.createElement("div");
+      cell.className = "dayCell" + (isWeekendISO(day) ? " weekend" : "") + (day === todayIso ? " today" : "");
+      if (day === todayIso) {
+        const line = document.createElement("div");
+        line.className = "nowLine";
+        line.style.left = (nowHour / 24 * 100) + "%";
+        cell.appendChild(line);
+      }
+      cellsByKey[machine + "|" + day] = cell;
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+
+  const byCell = {};
+  function addFragment(key, frag) {
+    if (!cellsByKey[key]) return;
+    (byCell[key] = byCell[key] || []).push(frag);
+  }
+  for (const t of state.tasks) {
+    if (t.endNextDay) {
+      addFragment(t.machine + "|" + t.date, { task: t, dispStart: t.start, dispEnd: 24, part: "first" });
+      addFragment(t.machine + "|" + addDaysISO(t.date, 1), { task: t, dispStart: 0, dispEnd: t.end, part: "second" });
+    } else {
+      addFragment(t.machine + "|" + t.date, { task: t, dispStart: t.start, dispEnd: t.end, part: "full" });
+    }
+  }
+  for (const key in byCell) {
+    const list = byCell[key];
+    for (const frag of list) {
+      const overlap = list.some(o => o.task.id !== frag.task.id && frag.dispStart < o.dispEnd && o.dispStart < frag.dispEnd);
+      cellsByKey[key].appendChild(buildTask(frag, overlap));
+    }
+  }
+}
+
+function buildTask(frag, overlap) {
+  const { task, part } = frag;
+  const el = document.createElement("div");
+  el.className = "task" + (overlap ? " overlap" : "") + (task.done ? " done" : "") +
+    (part === "first" ? " fragFirst" : part === "second" ? " fragSecond" : "");
+  el.style.left = (frag.dispStart / 24 * 100) + "%";
+  el.style.width = ((frag.dispEnd - frag.dispStart) / 24 * 100) + "%";
+  el.style.background = task.color || "#3b82f6";
+
+  const l1 = document.createElement("div");
+  l1.className = "l1";
+  l1.textContent = task.label || "(bez nazwy)";
+  el.appendChild(l1);
+
+  const details = [task.orderNumber, task.materialType].filter(v => v && String(v).trim()).join(" · ");
+  if (details) {
+    const l2 = document.createElement("div");
+    l2.className = "l2";
+    l2.textContent = details;
+    el.appendChild(l2);
+  }
+
+  const { startLabel, endLabel } = formatTaskTimeRange(task);
+  const l3 = document.createElement("div");
+  l3.className = "l3";
+  l3.textContent = part === "second" ? "↩ do " + decToTime(task.end)
+    : part === "first" ? `${startLabel}–${endLabel} →`
+    : `${startLabel}–${endLabel}`;
+  el.appendChild(l3);
+  return el;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadCache();
+  render();
+  load();
+  setInterval(load, LOAD_MS);
+  setInterval(render, RENDER_MS);
+  window.addEventListener("resize", render);
+});
+</script>
+</body>
+</html>
