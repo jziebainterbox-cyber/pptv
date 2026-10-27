@@ -29,6 +29,7 @@ html, body {
   cursor: none;
   user-select: none;
 }
+html.mouseActive, html.mouseActive body { cursor: default; }
 
 #app { display: flex; flex-direction: column; height: 100vh; }
 
@@ -39,13 +40,25 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1vw;
   padding: 0 1.2vw;
   background: #0b121b;
   border-bottom: 1px solid var(--line);
 }
-#top .title { font-weight: 700; font-size: clamp(16px, 2.6vh, 34px); }
-#range { font-size: clamp(14px, 2.4vh, 32px); font-weight: 600; }
-#status { display: flex; align-items: center; gap: 0.5em; font-size: clamp(12px, 1.9vh, 26px); color: var(--muted); }
+#top .title { font-weight: 700; font-size: clamp(16px, 2.6vh, 34px); white-space: nowrap; }
+#range { font-size: clamp(14px, 2.4vh, 32px); font-weight: 600; white-space: nowrap; }
+#topRight { display: flex; align-items: center; gap: 1.2vw; }
+#viewChip {
+  display: none;
+  padding: 0.2em 0.8em;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #1a1300;
+  font-weight: 700;
+  font-size: clamp(11px, 1.8vh, 24px);
+  white-space: nowrap;
+}
+#status { display: flex; align-items: center; gap: 0.5em; font-size: clamp(12px, 1.9vh, 26px); color: var(--muted); white-space: nowrap; }
 #status .dot { width: 0.7em; height: 0.7em; border-radius: 50%; background: #34d399; }
 #status.warn .dot { background: #f59e0b; }
 #status.bad .dot { background: #ef4444; }
@@ -73,13 +86,14 @@ html, body {
 .dayHeader {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
   padding: 0.6vh 0.6vw 0;
   background: var(--panel);
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 .dayHeader.today { background: #1d3b36; }
-.dayHeader .dow { font-weight: 700; font-size: clamp(14px, 2.4vh, 32px); }
+.dayHeader .dow { font-weight: 700; white-space: nowrap; }
 .dayHeader .hours { position: relative; height: 2.6vh; margin-top: 0.8vh; }
 .hourTick {
   position: absolute;
@@ -146,6 +160,7 @@ html, body {
   text-shadow: 0 1px 2px rgba(0,0,0,0.55);
   z-index: 2;
 }
+.task.tiny { padding: 0; }
 .task .l1, .task .l2, .task .l3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .task .l1 { font-weight: 700; font-size: 1.1em; }
 .task .l3 { opacity: 0.9; }
@@ -158,6 +173,54 @@ html, body {
   text-decoration-thickness: 3px;
   text-decoration-color: rgba(0,0,0,0.85);
 }
+.task.selected {
+  outline: 4px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px rgba(255,255,255,0.25), 0 4px 14px rgba(0,0,0,0.6);
+  z-index: 20;
+}
+
+#detail {
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  gap: 0.6vh;
+  z-index: 50;
+  max-width: min(42vw, 700px);
+  padding: 1.4vh 1.2vw;
+  background: #fffdf2;
+  color: #202428;
+  border: 2px solid #d8b74a;
+  border-radius: 1vh;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  font-size: clamp(15px, 2.4vh, 30px);
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  pointer-events: none;
+}
+#detail .dTitle { font-weight: 700; font-size: 1.1em; }
+#detail .dLabel { font-weight: 600; color: #7a6416; }
+#detail .dDone { font-weight: 700; color: #047857; }
+
+#hintBar {
+  position: fixed;
+  left: 50%;
+  bottom: 2vh;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 0.8vh 1.6vw;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid #4a5d73;
+  color: #fff;
+  font-size: clamp(13px, 2.1vh, 28px);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+#hintBar.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -165,27 +228,42 @@ html, body {
   <div id="top">
     <div class="title">Plan produkcji</div>
     <div id="range"></div>
-    <div id="status"><span class="dot"></span><span id="statusText">Wczytywanie…</span></div>
+    <div id="topRight">
+      <span id="viewChip"></span>
+      <div id="status"><span class="dot"></span><span id="statusText">Wczytywanie…</span></div>
+    </div>
   </div>
   <div id="grid"></div>
 </div>
+<div id="detail"></div>
+<div id="hintBar"></div>
 
 <script>
 "use strict";
 
-// Read-only wallboard for a TV: loads plan.json from the same folder every
-// minute, shows today + the next few days (change with ?dni=N, 1-7), and keeps
-// the last good data on screen if the network drops.
+// Read-only wallboard for a TV. Loads plan.json from the same folder every minute and
+// keeps the last good data on screen if the network drops.
+//
+// Remote control (arrow keys / OK / Back as sent by a TV remote):
+//   view mode:    LEFT/RIGHT = shift one day, CH+/CH- (PageUp/PageDown) = shift a week,
+//                 UP/DOWN = more/fewer days on screen, OK = pick a task to see details,
+//                 Back/Home/0 = return to today.
+//   detail mode:  arrows = move between tasks, OK/Back = close.
+// A custom view returns to "today" by itself after a few minutes without a key press.
+// A mouse works too: hovering a task shows the same details card.
 const params = new URLSearchParams(location.search);
 function intParam(name, min, max, def) {
   const n = parseInt(params.get(name), 10);
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
 }
-const DAYS = intParam("dni", 1, 7, 3);
+const BASE_DAYS = intParam("dni", 1, 14, 3);
+const DAY_STEPS = [1, 2, 3, 4, 5, 7, 10, 14];
 const DATA_FILE = "plan.json";
 const LOAD_MS = 60 * 1000;
 const RENDER_MS = 30 * 1000;
 const STALE_MS = 15 * 60 * 1000;
+const INACTIVITY_MS = 3 * 60 * 1000;
+const HINT_MS = 7000;
 const CACHE_KEY = "planProdukcjiTV_cache_v1";
 const DEFAULT_MACHINES = [
   "Klett", "Curioni", "Lih Sheng 1", "Lih Sheng 2",
@@ -195,6 +273,14 @@ const DEFAULT_MACHINES = [
 let state = { machines: DEFAULT_MACHINES.slice(), tasks: [] };
 let lastOk = null;
 let lastError = null;
+
+let offsetDays = 0;          // view start = today + offsetDays
+let daysShown = BASE_DAYS;
+let selMode = false;
+let selKey = null;
+let lastKeyAt = 0;
+let hoverActive = false;
+let hintTimer = null;
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 function isoFromDate(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
@@ -238,6 +324,12 @@ function formatTaskTimeRange(task) {
   else endLabel = decToTime(task.end);
   return { startLabel, endLabel };
 }
+function taskDurationText(task) {
+  const hours = task.endNextDay ? (24 - task.start + task.end) : (task.end - task.start);
+  const total = Math.round(hours * 60);
+  const h = Math.floor(total / 60), m = total % 60;
+  return (h ? h + " h" : "") + (h && m ? " " : "") + (m ? m + " min" : "");
+}
 
 const HOUR_TICK_STEPS = [1, 2, 3, 4, 6, 8, 12, 24];
 const MIN_TICK_SPACING_PX = 75;
@@ -256,6 +348,7 @@ function buildHourRuler(container, pxPerHour) {
   }
 }
 
+// ---------- Data ----------
 function applyData(data) {
   state.machines = Array.isArray(data.machines) && data.machines.length ? data.machines : DEFAULT_MACHINES.slice();
   state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
@@ -281,6 +374,11 @@ async function load() {
   } catch (e) {
     lastError = e.message || String(e);
   }
+  refresh();
+}
+// Don't rebuild the grid under the mouse pointer while a hover card is open.
+function refresh() {
+  if (hoverActive) { renderStatus(); return; }
   render();
 }
 
@@ -297,18 +395,24 @@ function renderStatus() {
   box.className = cls;
 }
 
+// ---------- Rendering ----------
 function render() {
+  hideDetail();
   const now = new Date();
   const todayIso = isoFromDate(now);
+  const startIso = addDaysISO(todayIso, offsetDays);
   const days = [];
-  for (let i = 0; i < DAYS; i++) days.push(addDaysISO(todayIso, i));
+  for (let i = 0; i < daysShown; i++) days.push(addDaysISO(startIso, i));
 
   const first = new Date(days[0] + "T00:00:00"), last = new Date(days[days.length - 1] + "T00:00:00");
+  const w1 = isoWeekNumber(first), w2 = isoWeekNumber(last);
   document.getElementById("range").textContent =
-    `Tydzień ${isoWeekNumber(now)} · ${pad2(first.getDate())}.${pad2(first.getMonth() + 1)} – ${pad2(last.getDate())}.${pad2(last.getMonth() + 1)}.${last.getFullYear()}`;
+    `Tydzień ${w1 === w2 ? w1 : w1 + "–" + w2} · ${pad2(first.getDate())}.${pad2(first.getMonth() + 1)} – ${pad2(last.getDate())}.${pad2(last.getMonth() + 1)}.${last.getFullYear()}`;
   renderStatus();
+  updateChip();
 
-  const dayPx = (window.innerWidth * 0.87) / DAYS;
+  const dayPx = (window.innerWidth * 0.87) / daysShown;
+  const dowFont = Math.max(10, Math.min(window.innerHeight * 0.024, dayPx / 7.5));
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
@@ -323,6 +427,7 @@ function render() {
     h.className = "dayHeader" + (day === todayIso ? " today" : "");
     const dow = document.createElement("div");
     dow.className = "dow";
+    dow.style.fontSize = dowFont + "px";
     dow.textContent = formatDayHeader(day);
     const hours = document.createElement("div");
     hours.className = "hours";
@@ -362,61 +467,266 @@ function render() {
     if (!cellsByKey[key]) return;
     (byCell[key] = byCell[key] || []).push(frag);
   }
-  for (const t of state.tasks) {
+  state.tasks.forEach((t, idx) => {
+    const id = t.id !== undefined && t.id !== null ? t.id : "i" + idx;
     if (t.endNextDay) {
-      addFragment(t.machine + "|" + t.date, { task: t, dispStart: t.start, dispEnd: 24, part: "first" });
-      addFragment(t.machine + "|" + addDaysISO(t.date, 1), { task: t, dispStart: 0, dispEnd: t.end, part: "second" });
+      addFragment(t.machine + "|" + t.date, { task: t, id, dispStart: t.start, dispEnd: 24, part: "first" });
+      addFragment(t.machine + "|" + addDaysISO(t.date, 1), { task: t, id, dispStart: 0, dispEnd: t.end, part: "second" });
     } else {
-      addFragment(t.machine + "|" + t.date, { task: t, dispStart: t.start, dispEnd: t.end, part: "full" });
+      addFragment(t.machine + "|" + t.date, { task: t, id, dispStart: t.start, dispEnd: t.end, part: "full" });
     }
-  }
+  });
   for (const key in byCell) {
     const list = byCell[key];
     for (const frag of list) {
-      const overlap = list.some(o => o.task.id !== frag.task.id && frag.dispStart < o.dispEnd && o.dispStart < frag.dispEnd);
-      cellsByKey[key].appendChild(buildTask(frag, overlap));
+      const overlap = list.some(o => o.id !== frag.id && frag.dispStart < o.dispEnd && o.dispStart < frag.dispEnd);
+      cellsByKey[key].appendChild(buildTask(frag, overlap, dayPx));
     }
   }
+
+  restoreSelection();
 }
 
-function buildTask(frag, overlap) {
+function buildTask(frag, overlap, dayPx) {
   const { task, part } = frag;
   const el = document.createElement("div");
+  const widthPx = (frag.dispEnd - frag.dispStart) / 24 * dayPx;
   el.className = "task" + (overlap ? " overlap" : "") + (task.done ? " done" : "") +
-    (part === "first" ? " fragFirst" : part === "second" ? " fragSecond" : "");
+    (part === "first" ? " fragFirst" : part === "second" ? " fragSecond" : "") + (widthPx < 40 ? " tiny" : "");
   el.style.left = (frag.dispStart / 24 * 100) + "%";
   el.style.width = ((frag.dispEnd - frag.dispStart) / 24 * 100) + "%";
   el.style.background = task.color || "#3b82f6";
+  el.dataset.key = frag.id + "|" + part;
+  el._task = task;
 
-  const l1 = document.createElement("div");
-  l1.className = "l1";
-  l1.textContent = task.label || "(bez nazwy)";
-  el.appendChild(l1);
+  if (widthPx >= 40) {
+    const hasNote = task.note && String(task.note).trim();
+    const l1 = document.createElement("div");
+    l1.className = "l1";
+    l1.textContent = (task.label || "(bez nazwy)") + (hasNote ? " ✎" : "");
+    el.appendChild(l1);
 
-  const details = [task.orderNumber, task.materialType].filter(v => v && String(v).trim()).join(" · ");
-  if (details) {
-    const l2 = document.createElement("div");
-    l2.className = "l2";
-    l2.textContent = details;
-    el.appendChild(l2);
+    if (widthPx >= 110) {
+      const details = [task.orderNumber, task.materialType].filter(v => v && String(v).trim()).join(" · ");
+      if (details) {
+        const l2 = document.createElement("div");
+        l2.className = "l2";
+        l2.textContent = details;
+        el.appendChild(l2);
+      }
+      const { startLabel, endLabel } = formatTaskTimeRange(task);
+      const l3 = document.createElement("div");
+      l3.className = "l3";
+      l3.textContent = part === "second" ? "↩ do " + decToTime(task.end)
+        : part === "first" ? `${startLabel}–${endLabel} →`
+        : `${startLabel}–${endLabel}`;
+      el.appendChild(l3);
+    }
   }
 
-  const { startLabel, endLabel } = formatTaskTimeRange(task);
-  const l3 = document.createElement("div");
-  l3.className = "l3";
-  l3.textContent = part === "second" ? "↩ do " + decToTime(task.end)
-    : part === "first" ? `${startLabel}–${endLabel} →`
-    : `${startLabel}–${endLabel}`;
-  el.appendChild(l3);
+  el.addEventListener("mouseenter", () => { hoverActive = true; showDetail(el); });
+  el.addEventListener("mouseleave", () => {
+    hoverActive = false;
+    const sel = document.querySelector("#grid .task.selected");
+    if (selMode && sel) showDetail(sel); else hideDetail();
+  });
   return el;
 }
+
+// ---------- Details card (hover or remote selection) ----------
+function detailLine(box, label, value, cls) {
+  const line = document.createElement("div");
+  if (cls) line.className = cls;
+  if (label) {
+    const l = document.createElement("span");
+    l.className = "dLabel";
+    l.textContent = label + " ";
+    line.appendChild(l);
+  }
+  line.appendChild(document.createTextNode(value));
+  box.appendChild(line);
+}
+function showDetail(el) {
+  const task = el._task;
+  if (!task) return;
+  const box = document.getElementById("detail");
+  box.innerHTML = "";
+  const { startLabel, endLabel } = formatTaskTimeRange(task);
+  detailLine(box, "", `${task.label || "(bez nazwy)"} · ${startLabel}–${endLabel}`, "dTitle");
+  if (task.done) detailLine(box, "", "✓ Zrobione", "dDone");
+  detailLine(box, "Maszyna:", String(task.machine));
+  const dur = taskDurationText(task);
+  if (dur) detailLine(box, "Czas:", dur);
+  if (task.orderNumber && String(task.orderNumber).trim()) detailLine(box, "Nr zlecenia:", String(task.orderNumber));
+  if (task.materialType && String(task.materialType).trim()) detailLine(box, "Typ surowca:", String(task.materialType));
+  if (task.materialQty && String(task.materialQty).trim()) detailLine(box, "Ilość surowca:", String(task.materialQty));
+  if (task.qty !== undefined && task.qty !== null && task.qty !== "") detailLine(box, "Ilość:", task.qty + " szt.");
+  if (task.note && String(task.note).trim()) detailLine(box, "Uwagi:", String(task.note));
+
+  box.style.display = "flex";
+  box.style.left = "0px";
+  box.style.top = "0px";
+  const r = el.getBoundingClientRect();
+  const b = box.getBoundingClientRect();
+  let top = r.top - b.height - 8;
+  if (top < 8) top = r.bottom + 8;
+  if (top + b.height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - b.height - 8);
+  const left = Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth - b.width - 8));
+  box.style.top = top + "px";
+  box.style.left = left + "px";
+}
+function hideDetail() {
+  document.getElementById("detail").style.display = "none";
+}
+
+// ---------- Remote-control selection ----------
+function allTiles() { return [...document.querySelectorAll("#grid .task")]; }
+function setSelected(el) {
+  document.querySelectorAll("#grid .task.selected").forEach(n => n.classList.remove("selected"));
+  if (!el) { selKey = null; return; }
+  el.classList.add("selected");
+  selKey = el.dataset.key;
+  showDetail(el);
+}
+function enterSelection() {
+  const tiles = allTiles();
+  if (!tiles.length) return false;
+  selMode = true;
+  let pick = null;
+  const nowLine = document.querySelector("#grid .nowLine");
+  if (nowLine) {
+    const nx = nowLine.getBoundingClientRect().left;
+    pick = tiles.find(t => { const r = t.getBoundingClientRect(); return r.left <= nx && r.right >= nx; });
+  }
+  if (!pick) {
+    pick = tiles.slice().sort((a, b) => {
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      return Math.abs(ra.top - rb.top) > 10 ? ra.top - rb.top : ra.left - rb.left;
+    })[0];
+  }
+  setSelected(pick);
+  updateChip();
+  return true;
+}
+function exitSelection() {
+  selMode = false;
+  selKey = null;
+  document.querySelectorAll("#grid .task.selected").forEach(n => n.classList.remove("selected"));
+  hideDetail();
+  updateChip();
+}
+function restoreSelection() {
+  if (!selMode) return;
+  const el = selKey ? allTiles().find(t => t.dataset.key === selKey) : null;
+  if (el) setSelected(el); else exitSelection();
+}
+// Nearest tile in the pressed direction: same row for left/right, nearest row for up/down.
+function moveSelection(dir) {
+  const cur = document.querySelector("#grid .task.selected");
+  if (!cur) { enterSelection(); return; }
+  const cr = cur.getBoundingClientRect();
+  const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+  const rowH = cur.parentElement.getBoundingClientRect().height || cr.height;
+  let best = null, bestScore = Infinity;
+  for (const t of allTiles()) {
+    if (t === cur) continue;
+    const r = t.getBoundingClientRect();
+    const tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+    const dx = tx - cx, dy = ty - cy;
+    let score = null;
+    if (dir === "right" && Math.abs(dy) < rowH * 0.5 && dx > 1) score = dx;
+    else if (dir === "left" && Math.abs(dy) < rowH * 0.5 && dx < -1) score = -dx;
+    else if (dir === "down" && dy > rowH * 0.5) score = Math.round(dy / rowH) * 100000 + Math.abs(dx);
+    else if (dir === "up" && dy < -rowH * 0.5) score = Math.round(-dy / rowH) * 100000 + Math.abs(dx);
+    if (score !== null && score < bestScore) { best = t; bestScore = score; }
+  }
+  if (best) setSelected(best);
+}
+
+// ---------- View control ----------
+function viewIsCustom() { return offsetDays !== 0 || daysShown !== BASE_DAYS; }
+function resetView() {
+  offsetDays = 0;
+  daysShown = BASE_DAYS;
+  selMode = false;
+  selKey = null;
+  render();
+}
+function stepDays(direction) {
+  if (direction > 0) {
+    const next = DAY_STEPS.find(s => s > daysShown);
+    daysShown = next !== undefined ? next : daysShown;
+  } else {
+    const smaller = DAY_STEPS.filter(s => s < daysShown);
+    daysShown = smaller.length ? smaller[smaller.length - 1] : daysShown;
+  }
+}
+function updateChip() {
+  const chip = document.getElementById("viewChip");
+  if (!viewIsCustom() && !selMode) { chip.style.display = "none"; return; }
+  const left = Math.max(0, INACTIVITY_MS - (Date.now() - lastKeyAt));
+  const sec = Math.ceil(left / 1000);
+  chip.textContent = `${viewIsCustom() ? "Widok własny" : "Szczegóły"} · powrót za ${Math.floor(sec / 60)}:${pad2(sec % 60)}`;
+  chip.style.display = "inline-block";
+}
+function hintText() {
+  return selMode
+    ? "◀ ▶ ▲ ▼ wybór zadania   ·   OK lub Wstecz — zamknij szczegóły"
+    : "◀ ▶ dzień   ·   ▲ ▼ liczba dni   ·   OK szczegóły zadań   ·   Wstecz — dziś";
+}
+function showHint(msg) {
+  const el = document.getElementById("hintBar");
+  el.textContent = msg || hintText();
+  el.classList.add("show");
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => el.classList.remove("show"), HINT_MS);
+}
+
+const BACK_KEYS = ["Escape", "Backspace", "GoBack", "BrowserBack", "Home", "0"];
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const k = e.key;
+  let handled = true;
+  let hintMsg;
+  lastKeyAt = Date.now();
+  if (selMode) {
+    if (k === "ArrowLeft") moveSelection("left");
+    else if (k === "ArrowRight") moveSelection("right");
+    else if (k === "ArrowUp") moveSelection("up");
+    else if (k === "ArrowDown") moveSelection("down");
+    else if (k === "Enter" || BACK_KEYS.includes(k)) exitSelection();
+    else handled = false;
+  } else {
+    if (k === "ArrowLeft") { offsetDays -= 1; render(); }
+    else if (k === "ArrowRight") { offsetDays += 1; render(); }
+    else if (k === "PageUp") { offsetDays -= 7; render(); }
+    else if (k === "PageDown") { offsetDays += 7; render(); }
+    else if (k === "ArrowUp") { stepDays(1); render(); }
+    else if (k === "ArrowDown") { stepDays(-1); render(); }
+    else if (k === "Enter") { if (!enterSelection()) hintMsg = "Brak zadań w widocznym zakresie dni"; }
+    else if (BACK_KEYS.includes(k)) resetView();
+    else handled = false;
+  }
+  if (handled) { e.preventDefault(); showHint(hintMsg); updateChip(); }
+});
+
+let cursorTimer = null;
+document.addEventListener("mousemove", () => {
+  document.documentElement.classList.add("mouseActive");
+  clearTimeout(cursorTimer);
+  cursorTimer = setTimeout(() => document.documentElement.classList.remove("mouseActive"), 4000);
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   loadCache();
   render();
   load();
   setInterval(load, LOAD_MS);
-  setInterval(render, RENDER_MS);
+  setInterval(refresh, RENDER_MS);
+  setInterval(() => {
+    if ((viewIsCustom() || selMode) && Date.now() - lastKeyAt > INACTIVITY_MS) resetView();
+    else updateChip();
+  }, 1000);
   window.addEventListener("resize", render);
 });
 </script>
