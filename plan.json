@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-27T09:36:08.028Z",
+  "publishedAt": "2026-10-27T09:38:04.058Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -89,6 +89,38 @@
       "materialQty": "",
       "qty": null,
       "color": "#0ea5e9",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "t6nmjgicrmvqhs4e4",
+      "machine": "Sklejarka 2",
+      "date": "2026-10-27",
+      "start": 10.25,
+      "end": 22.25,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#f4f73b",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "t2wokc7jxmvqhs8z0",
+      "machine": "Sklejarka IIcz.",
+      "date": "2026-10-27",
+      "start": 3.25,
+      "end": 21,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#ec4899",
       "note": "",
       "done": false
     }
