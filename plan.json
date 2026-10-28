@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-28T10:51:42.072Z",
+  "publishedAt": "2026-10-28T10:53:34.177Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -461,18 +461,50 @@
       "done": false
     },
     {
-      "id": "tl6727519mvrzopn1",
-      "machine": "Kaszerownica",
+      "id": "tk19cujvdmvrzxmfj",
+      "machine": "Sklejarka IIcz.",
       "date": "2026-10-28",
-      "start": 3.75,
-      "end": 22.5,
+      "start": 2.25,
+      "end": 22,
       "endNextDay": false,
       "label": "",
       "orderNumber": "",
       "materialType": "",
       "materialQty": "",
       "qty": null,
-      "color": "#e1f73b",
+      "color": "#84cc16",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "tlacui3mvmvrzxpdl",
+      "machine": "Kaszerownica",
+      "date": "2026-10-28",
+      "start": 2.5,
+      "end": 24,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#ef4444",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "tz0vqh8nhmvrzxs6p",
+      "machine": "Kaszerownica",
+      "date": "2026-10-29",
+      "start": 4.75,
+      "end": 20.5,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#2563eb",
       "note": "",
       "done": false
     }
