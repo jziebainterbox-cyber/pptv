@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-28T12:42:24.690Z",
+  "publishedAt": "2026-10-28T12:44:46.060Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -57,6 +57,54 @@
       "materialQty": "",
       "qty": null,
       "color": "#f43f5e",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "t0xvx7xqvmvs3wipk",
+      "machine": "Lih Sheng 2",
+      "date": "2026-10-28",
+      "start": 3.75,
+      "end": 14.75,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#0ea5e9",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "tpa6eu3mhmvs3wn9c",
+      "machine": "Sklejarka 1",
+      "date": "2026-10-28",
+      "start": 14.75,
+      "end": 24,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#f59e0b",
+      "note": "",
+      "done": false
+    },
+    {
+      "id": "t41setjwlmvs3wr98",
+      "machine": "Sklejarka 2",
+      "date": "2026-10-28",
+      "start": 3.75,
+      "end": 15,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#84cc16",
       "note": "",
       "done": false
     }
