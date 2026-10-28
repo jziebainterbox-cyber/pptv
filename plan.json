@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-28T10:14:45.023Z",
+  "publishedAt": "2026-10-28T10:51:42.072Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -90,7 +90,7 @@
       "qty": null,
       "color": "#0ea5e9",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "txxldmy6lmvqibdsq",
@@ -106,7 +106,7 @@
       "qty": null,
       "color": "#f97316",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "t7d5rma96mvqibk4u",
@@ -122,7 +122,7 @@
       "qty": null,
       "color": "#14b8a6",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "t9bj7b3kwmvqibpbm",
@@ -170,7 +170,7 @@
       "qty": null,
       "color": "#f59e0b",
       "note": "",
-      "done": false
+      "done": true
     },
     {
       "id": "ttxyzhhiymvqic3um",
@@ -458,6 +458,22 @@
       "qty": null,
       "color": "#0f172a",
       "note": "wrwerw",
+      "done": false
+    },
+    {
+      "id": "tl6727519mvrzopn1",
+      "machine": "Kaszerownica",
+      "date": "2026-10-28",
+      "start": 3.75,
+      "end": 22.5,
+      "endNextDay": false,
+      "label": "",
+      "orderNumber": "",
+      "materialType": "",
+      "materialQty": "",
+      "qty": null,
+      "color": "#e1f73b",
+      "note": "",
       "done": false
     }
   ]
