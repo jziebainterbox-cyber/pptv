@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-11-01T17:59:54.766Z",
+  "publishedAt": "2026-11-01T18:02:11.071Z",
   "machines": [
     "Klett",
     "Curioni",
@@ -11,22 +11,5 @@
     "Kaszerownica",
     "E-commerce"
   ],
-  "tasks": [
-    {
-      "id": "t2y47h3jdmvy4xf5q",
-      "machine": "Klett",
-      "date": "2026-11-01",
-      "start": 4.5,
-      "end": 21,
-      "endNextDay": false,
-      "label": "Grażyna",
-      "orderNumber": "",
-      "materialType": "",
-      "materialQty": "",
-      "qty": null,
-      "color": "#84cc16",
-      "note": "",
-      "done": true
-    }
-  ]
+  "tasks": []
 }
